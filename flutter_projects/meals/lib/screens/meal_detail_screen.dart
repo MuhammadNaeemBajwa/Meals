@@ -11,9 +11,13 @@ class MealDetailScreen extends StatelessWidget {
   const MealDetailScreen({
     super.key,
     required this.meal,
+    required this.onToggleFavorite,
+    required this.isFavorite,
   });
 
   final Meal meal;
+  final void Function(Meal meal) onToggleFavorite;
+  final bool isFavorite;
 
   String get complexityText {
     return meal.complexity.name[0].toUpperCase() +
@@ -30,6 +34,16 @@ class MealDetailScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(meal.title),
+        actions: [
+          IconButton(
+            onPressed: () {
+              onToggleFavorite(meal);
+            },
+            icon: Icon(
+              isFavorite ? Icons.favorite : Icons.favorite_border,
+            ),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(

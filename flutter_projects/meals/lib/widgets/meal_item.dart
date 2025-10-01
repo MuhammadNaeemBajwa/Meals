@@ -6,10 +6,14 @@ class MealItem extends StatelessWidget {
     super.key,
     required this.meal,
     required this.onSelectMeal,
+    required this.isFavorite,
+    required this.onToggleFavorite,
   });
 
   final Meal meal;
   final void Function() onSelectMeal;
+  final bool isFavorite;
+  final void Function(Meal meal) onToggleFavorite;
 
   String get complexityText {
     return meal.complexity.name[0].toUpperCase() +
@@ -127,6 +131,23 @@ class MealItem extends StatelessWidget {
                       ],
                     ),
                   ],
+                ),
+              ),
+            ),
+            Positioned(
+              top: 8,
+              right: 8,
+              child: IconButton(
+                onPressed: () {
+                  onToggleFavorite(meal);
+                },
+                icon: Icon(
+                  isFavorite ? Icons.favorite : Icons.favorite_border,
+                  color: Colors.white,
+                  size: 28,
+                ),
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.black45,
                 ),
               ),
             ),
