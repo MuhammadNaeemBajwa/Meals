@@ -10,10 +10,12 @@ class CategoriesScreen extends StatefulWidget {
     super.key,
     required this.onToggleFavorite,
     required this.favoriteMeals,
+    required this.availableMeals,
   });
 
   final void Function(Meal meal) onToggleFavorite;
   final List<Meal> favoriteMeals;
+  final List<Meal> availableMeals;
 
   @override
   State<CategoriesScreen> createState() => _CategoriesScreenState();
@@ -22,7 +24,7 @@ class CategoriesScreen extends StatefulWidget {
 class _CategoriesScreenState extends State<CategoriesScreen> {
   void _selectCategory(BuildContext context, Category category) {
     // Filter meals that belong to this category
-    final filteredMeals = dummyMeals
+    final filteredMeals = widget.availableMeals
         .where((meal) => meal.categories.contains(category.id))
         .toList();
 
