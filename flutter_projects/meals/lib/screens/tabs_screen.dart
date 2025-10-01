@@ -49,6 +49,7 @@ class _TabsScreenState extends State<TabsScreen> {
   @override
   Widget build(BuildContext context) {
     Widget activePage = CategoriesScreen(
+      key: ValueKey(_favoriteMeals.length),
       onToggleFavorite: _toggleMealFavoriteStatus,
       favoriteMeals: _favoriteMeals,
     );
@@ -56,6 +57,7 @@ class _TabsScreenState extends State<TabsScreen> {
 
     if (_selectedPageIndex == 1) {
       activePage = FavoritesScreen(
+        key: ValueKey(_favoriteMeals.length),
         favoriteMeals: _favoriteMeals,
         onToggleFavorite: _toggleMealFavoriteStatus,
       );

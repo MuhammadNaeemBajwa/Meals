@@ -3,7 +3,7 @@ import 'package:meals/model/meal.dart';
 import 'package:meals/screens/meal_detail_screen.dart';
 import 'package:meals/widgets/meal_item.dart';
 
-class MealsScreen extends StatelessWidget {
+class MealsScreen extends StatefulWidget {
   const MealsScreen({
     super.key,
     required this.title,
@@ -17,16 +17,23 @@ class MealsScreen extends StatelessWidget {
   final void Function(Meal meal) onToggleFavorite;
   final List<Meal> favoriteMeals;
 
-  void _selectMeal(BuildContext context, Meal meal) {
-    Navigator.of(context).push(
+  @override
+  State<MealsScreen> createState() => _MealsScreenState();
+}
+
+class _MealsScreenState extends State<MealsScreen> {
+  void _selectMeal(BuildContext context, Meal meal) async {
+    await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (ctx) => MealDetailScreen(
           meal: meal,
-          onToggleFavorite: onToggleFavorite,
-          isFavorite: favoriteMeals.contains(meal),
+          onToggleFavorite: widget.onToggleFavorite,
+          isFavorite: widget.favoriteMeals.contains(meal),
         ),
       ),
     );
+    // Rebuild this screen when we come back from detail screen
+    setState(() {});
   }
 
   @override
@@ -52,23 +59,23 @@ class MealsScreen extends StatelessWidget {
       ),
     );
 
-    if (meals.isNotEmpty) {
+    if (widget.meals.isNotEmpty) {
       content = ListView.builder(
-        itemCount: meals.length,
+        itemCount: widget.meals.length,
         itemBuilder: (ctx, index) => MealItem(
-          meal: meals[index],
+          meal: widget.meals[index],
           onSelectMeal: () {
-            _selectMeal(context, meals[index]);
+            _selectMeal(context, widget.meals[index]);
           },
-          isFavorite: favoriteMeals.contains(meals[index]),
-          onToggleFavorite: onToggleFavorite,
+          isFavorite: widget.favoriteMeals.contains(widget.meals[index]),
+          onToggleFavorite: widget.onToggleFavorite,
         ),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(title),
+        title: Text(widget.title),
       ),
       body: content,
     );

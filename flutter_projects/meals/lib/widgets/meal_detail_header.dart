@@ -15,14 +15,32 @@ class MealDetailHeader extends StatelessWidget {
       height: 300,
       width: double.infinity,
       fit: BoxFit.cover,
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) {
+          return child;
+        }
+        return Container(
+          height: 300,
+          color: Colors.black12,
+          child: Center(
+            child: CircularProgressIndicator(
+              value: loadingProgress.expectedTotalBytes != null
+                  ? loadingProgress.cumulativeBytesLoaded /
+                      loadingProgress.expectedTotalBytes!
+                  : null,
+              color: Theme.of(context).primaryColor,
+            ),
+          ),
+        );
+      },
       errorBuilder: (context, error, stackTrace) {
         return Container(
           height: 300,
-          color: Colors.grey[300],
-          child: const Icon(
+          color: Colors.black12,
+          child: Icon(
             Icons.restaurant,
             size: 80,
-            color: Colors.grey,
+            color: Colors.grey[600],
           ),
         );
       },

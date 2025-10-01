@@ -7,7 +7,7 @@ import 'package:meals/widgets/meal_item_trait.dart';
 import 'package:meals/widgets/section_title.dart';
 import 'package:meals/widgets/steps_list.dart';
 
-class MealDetailScreen extends StatelessWidget {
+class MealDetailScreen extends StatefulWidget {
   const MealDetailScreen({
     super.key,
     required this.meal,
@@ -19,28 +19,46 @@ class MealDetailScreen extends StatelessWidget {
   final void Function(Meal meal) onToggleFavorite;
   final bool isFavorite;
 
+  @override
+  State<MealDetailScreen> createState() => _MealDetailScreenState();
+}
+
+class _MealDetailScreenState extends State<MealDetailScreen> {
+  late bool _isFavorite;
+
+  @override
+  void initState() {
+    super.initState();
+    _isFavorite = widget.isFavorite;
+  }
+
+  void _toggleFavorite() {
+    setState(() {
+      _isFavorite = !_isFavorite;
+    });
+    widget.onToggleFavorite(widget.meal);
+  }
+
   String get complexityText {
-    return meal.complexity.name[0].toUpperCase() +
-        meal.complexity.name.substring(1);
+    return widget.meal.complexity.name[0].toUpperCase() +
+        widget.meal.complexity.name.substring(1);
   }
 
   String get affordabilityText {
-    return meal.affordability.name[0].toUpperCase() +
-        meal.affordability.name.substring(1);
+    return widget.meal.affordability.name[0].toUpperCase() +
+        widget.meal.affordability.name.substring(1);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(meal.title),
+        title: Text(widget.meal.title),
         actions: [
           IconButton(
-            onPressed: () {
-              onToggleFavorite(meal);
-            },
+            onPressed: _toggleFavorite,
             icon: Icon(
-              isFavorite ? Icons.favorite : Icons.favorite_border,
+              _isFavorite ? Icons.favorite : Icons.favorite_border,
             ),
           ),
         ],
@@ -48,17 +66,17 @@ class MealDetailScreen extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            MealDetailHeader(imageUrl: meal.imageUrl),
+            MealDetailHeader(imageUrl: widget.meal.imageUrl),
             const SizedBox(height: 14),
             _buildInfoCards(context),
             const SizedBox(height: 14),
-            DietaryInfoChips(meal: meal),
+            DietaryInfoChips(meal: widget.meal),
             const SizedBox(height: 14),
             const SectionTitle(title: 'Ingredients'),
-            IngredientsList(ingredients: meal.ingredients),
+            IngredientsList(ingredients: widget.meal.ingredients),
             const SizedBox(height: 14),
             const SectionTitle(title: 'Steps'),
-            StepsList(steps: meal.steps),
+            StepsList(steps: widget.meal.steps),
             const SizedBox(height: 24),
           ],
         ),
@@ -74,7 +92,7 @@ class MealDetailScreen extends StatelessWidget {
         children: [
           MealItemTrait(
             icon: Icons.schedule,
-            value: '${meal.duration} min',
+            value: '${widget.meal.duration} min',
             label: 'Duration',
           ),
           MealItemTrait(

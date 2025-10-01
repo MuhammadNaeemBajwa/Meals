@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:meals/model/meal.dart';
 
-class MealItem extends StatelessWidget {
+class MealItem extends StatefulWidget {
   const MealItem({
     super.key,
     required this.meal,
@@ -15,14 +15,42 @@ class MealItem extends StatelessWidget {
   final bool isFavorite;
   final void Function(Meal meal) onToggleFavorite;
 
+  @override
+  State<MealItem> createState() => _MealItemState();
+}
+
+class _MealItemState extends State<MealItem> {
+  late bool _isFavorite;
+
+  @override
+  void initState() {
+    super.initState();
+    _isFavorite = widget.isFavorite;
+  }
+
+  @override
+  void didUpdateWidget(MealItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isFavorite != widget.isFavorite) {
+      _isFavorite = widget.isFavorite;
+    }
+  }
+
+  void _toggleFavorite() {
+    setState(() {
+      _isFavorite = !_isFavorite;
+    });
+    widget.onToggleFavorite(widget.meal);
+  }
+
   String get complexityText {
-    return meal.complexity.name[0].toUpperCase() +
-        meal.complexity.name.substring(1);
+    return widget.meal.complexity.name[0].toUpperCase() +
+        widget.meal.complexity.name.substring(1);
   }
 
   String get affordabilityText {
-    return meal.affordability.name[0].toUpperCase() +
-        meal.affordability.name.substring(1);
+    return widget.meal.affordability.name[0].toUpperCase() +
+        widget.meal.affordability.name.substring(1);
   }
 
   @override
@@ -35,23 +63,40 @@ class MealItem extends StatelessWidget {
       clipBehavior: Clip.hardEdge,
       elevation: 2,
       child: InkWell(
-        onTap: onSelectMeal,
+        onTap: widget.onSelectMeal,
         child: Stack(
           children: [
-            FadeInImage(
-              placeholder: const AssetImage('assets/images/placeholder.png'),
-              image: NetworkImage(meal.imageUrl),
+            Image.network(
+              widget.meal.imageUrl,
               fit: BoxFit.cover,
               height: 200,
               width: double.infinity,
-              imageErrorBuilder: (context, error, stackTrace) {
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) {
+                  return child;
+                }
                 return Container(
                   height: 200,
-                  color: Colors.grey[300],
-                  child: const Icon(
+                  color: Colors.black12,
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      value: loadingProgress.expectedTotalBytes != null
+                          ? loadingProgress.cumulativeBytesLoaded /
+                              loadingProgress.expectedTotalBytes!
+                          : null,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                  ),
+                );
+              },
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  height: 200,
+                  color: Colors.black12,
+                  child: Icon(
                     Icons.restaurant,
                     size: 50,
-                    color: Colors.grey,
+                    color: Colors.grey[600],
                   ),
                 );
               },
@@ -69,7 +114,7 @@ class MealItem extends StatelessWidget {
                 child: Column(
                   children: [
                     Text(
-                      meal.title,
+                      widget.meal.title,
                       maxLines: 2,
                       textAlign: TextAlign.center,
                       softWrap: true,
@@ -93,7 +138,7 @@ class MealItem extends StatelessWidget {
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              '${meal.duration} min',
+                              '${widget.meal.duration} min',
                               style: const TextStyle(color: Colors.white),
                             ),
                           ],
@@ -138,11 +183,9 @@ class MealItem extends StatelessWidget {
               top: 8,
               right: 8,
               child: IconButton(
-                onPressed: () {
-                  onToggleFavorite(meal);
-                },
+                onPressed: _toggleFavorite,
                 icon: Icon(
-                  isFavorite ? Icons.favorite : Icons.favorite_border,
+                  _isFavorite ? Icons.favorite : Icons.favorite_border,
                   color: Colors.white,
                   size: 28,
                 ),
