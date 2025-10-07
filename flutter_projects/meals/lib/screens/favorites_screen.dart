@@ -1,32 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meals/model/meal.dart';
+import 'package:meals/providers/favorites_provider.dart';
 import 'package:meals/screens/meal_detail_screen.dart';
 import 'package:meals/widgets/meal_item.dart';
 
-class FavoritesScreen extends StatelessWidget {
-  const FavoritesScreen({
-    super.key,
-    required this.favoriteMeals,
-    required this.onToggleFavorite,
-  });
-
-  final List<Meal> favoriteMeals;
-  final void Function(Meal meal) onToggleFavorite;
+class FavoritesScreen extends ConsumerWidget {
+  const FavoritesScreen({super.key});
 
   void _selectMeal(BuildContext context, Meal meal) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (ctx) => MealDetailScreen(
-          meal: meal,
-          onToggleFavorite: onToggleFavorite,
-          isFavorite: true,
-        ),
+        builder: (ctx) => MealDetailScreen(meal: meal),
       ),
     );
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final favoriteMeals = ref.watch(favoriteMealsProvider);
+
     if (favoriteMeals.isEmpty) {
       return Center(
         child: Column(
@@ -68,8 +61,6 @@ class FavoritesScreen extends StatelessWidget {
         onSelectMeal: () {
           _selectMeal(context, favoriteMeals[index]);
         },
-        isFavorite: true,
-        onToggleFavorite: onToggleFavorite,
       ),
     );
   }

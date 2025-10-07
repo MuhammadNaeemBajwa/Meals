@@ -1,60 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meals/model/meal.dart';
+import 'package:meals/providers/favorites_provider.dart';
 
-class MealItem extends StatefulWidget {
+class MealItem extends ConsumerWidget {
   const MealItem({
     super.key,
     required this.meal,
     required this.onSelectMeal,
-    required this.isFavorite,
-    required this.onToggleFavorite,
   });
 
   final Meal meal;
   final void Function() onSelectMeal;
-  final bool isFavorite;
-  final void Function(Meal meal) onToggleFavorite;
-
-  @override
-  State<MealItem> createState() => _MealItemState();
-}
-
-class _MealItemState extends State<MealItem> {
-  late bool _isFavorite;
-
-  @override
-  void initState() {
-    super.initState();
-    _isFavorite = widget.isFavorite;
-  }
-
-  @override
-  void didUpdateWidget(MealItem oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.isFavorite != widget.isFavorite) {
-      _isFavorite = widget.isFavorite;
-    }
-  }
-
-  void _toggleFavorite() {
-    setState(() {
-      _isFavorite = !_isFavorite;
-    });
-    widget.onToggleFavorite(widget.meal);
-  }
 
   String get complexityText {
-    return widget.meal.complexity.name[0].toUpperCase() +
-        widget.meal.complexity.name.substring(1);
+    return meal.complexity.name[0].toUpperCase() +
+        meal.complexity.name.substring(1);
   }
 
   String get affordabilityText {
-    return widget.meal.affordability.name[0].toUpperCase() +
-        widget.meal.affordability.name.substring(1);
+    return meal.affordability.name[0].toUpperCase() +
+        meal.affordability.name.substring(1);
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final favoriteMeals = ref.watch(favoriteMealsProvider);
+    final isFavorite = favoriteMeals.contains(meal);
+
     return Card(
       margin: const EdgeInsets.all(8),
       shape: RoundedRectangleBorder(
@@ -63,11 +36,11 @@ class _MealItemState extends State<MealItem> {
       clipBehavior: Clip.hardEdge,
       elevation: 2,
       child: InkWell(
-        onTap: widget.onSelectMeal,
+        onTap: onSelectMeal,
         child: Stack(
           children: [
             Image.network(
-              widget.meal.imageUrl,
+              meal.imageUrl,
               fit: BoxFit.cover,
               height: 200,
               width: double.infinity,
@@ -114,7 +87,7 @@ class _MealItemState extends State<MealItem> {
                 child: Column(
                   children: [
                     Text(
-                      widget.meal.title,
+                      meal.title,
                       maxLines: 2,
                       textAlign: TextAlign.center,
                       softWrap: true,
@@ -138,7 +111,7 @@ class _MealItemState extends State<MealItem> {
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              '${widget.meal.duration} min',
+                              '${meal.duration} min',
                               style: const TextStyle(color: Colors.white),
                             ),
                           ],
@@ -183,9 +156,25 @@ class _MealItemState extends State<MealItem> {
               top: 8,
               right: 8,
               child: IconButton(
-                onPressed: _toggleFavorite,
+                onPressed: () {
+                  final wasAdded = ref
+                      .read(favoriteMealsProvider.notifier)
+                      .toggleMealFavoriteStatus(meal);
+
+                  ScaffoldMessenger.of(context).clearSnackBars();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        wasAdded
+                            ? '${meal.title} added to favorites'
+                            : '${meal.title} removed from favorites',
+                      ),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                },
                 icon: Icon(
-                  _isFavorite ? Icons.favorite : Icons.favorite_border,
+                  isFavorite ? Icons.favorite : Icons.favorite_border,
                   color: Colors.white,
                   size: 28,
                 ),

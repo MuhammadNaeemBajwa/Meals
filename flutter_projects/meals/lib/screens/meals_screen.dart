@@ -1,43 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meals/model/meal.dart';
 import 'package:meals/screens/meal_detail_screen.dart';
 import 'package:meals/widgets/meal_item.dart';
 
-class MealsScreen extends StatefulWidget {
+class MealsScreen extends ConsumerWidget {
   const MealsScreen({
     super.key,
     required this.title,
     required this.meals,
-    required this.onToggleFavorite,
-    required this.favoriteMeals,
   });
 
   final String title;
   final List<Meal> meals;
-  final void Function(Meal meal) onToggleFavorite;
-  final List<Meal> favoriteMeals;
 
-  @override
-  State<MealsScreen> createState() => _MealsScreenState();
-}
-
-class _MealsScreenState extends State<MealsScreen> {
-  void _selectMeal(BuildContext context, Meal meal) async {
-    await Navigator.of(context).push(
+  void _selectMeal(BuildContext context, Meal meal) {
+    Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (ctx) => MealDetailScreen(
-          meal: meal,
-          onToggleFavorite: widget.onToggleFavorite,
-          isFavorite: widget.favoriteMeals.contains(meal),
-        ),
+        builder: (ctx) => MealDetailScreen(meal: meal),
       ),
     );
-    // Rebuild this screen when we come back from detail screen
-    setState(() {});
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     Widget content = Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -59,23 +45,21 @@ class _MealsScreenState extends State<MealsScreen> {
       ),
     );
 
-    if (widget.meals.isNotEmpty) {
+    if (meals.isNotEmpty) {
       content = ListView.builder(
-        itemCount: widget.meals.length,
+        itemCount: meals.length,
         itemBuilder: (ctx, index) => MealItem(
-          meal: widget.meals[index],
+          meal: meals[index],
           onSelectMeal: () {
-            _selectMeal(context, widget.meals[index]);
+            _selectMeal(context, meals[index]);
           },
-          isFavorite: widget.favoriteMeals.contains(widget.meals[index]),
-          onToggleFavorite: widget.onToggleFavorite,
         ),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text(title),
       ),
       body: content,
     );

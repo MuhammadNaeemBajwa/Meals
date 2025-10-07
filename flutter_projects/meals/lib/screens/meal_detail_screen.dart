@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meals/model/meal.dart';
+import 'package:meals/providers/favorites_provider.dart';
 import 'package:meals/widgets/dietary_info_chip.dart';
 import 'package:meals/widgets/ingredients_list.dart';
 import 'package:meals/widgets/meal_detail_header.dart';
@@ -7,58 +9,53 @@ import 'package:meals/widgets/meal_item_trait.dart';
 import 'package:meals/widgets/section_title.dart';
 import 'package:meals/widgets/steps_list.dart';
 
-class MealDetailScreen extends StatefulWidget {
+class MealDetailScreen extends ConsumerWidget {
   const MealDetailScreen({
     super.key,
     required this.meal,
-    required this.onToggleFavorite,
-    required this.isFavorite,
   });
 
   final Meal meal;
-  final void Function(Meal meal) onToggleFavorite;
-  final bool isFavorite;
-
-  @override
-  State<MealDetailScreen> createState() => _MealDetailScreenState();
-}
-
-class _MealDetailScreenState extends State<MealDetailScreen> {
-  late bool _isFavorite;
-
-  @override
-  void initState() {
-    super.initState();
-    _isFavorite = widget.isFavorite;
-  }
-
-  void _toggleFavorite() {
-    setState(() {
-      _isFavorite = !_isFavorite;
-    });
-    widget.onToggleFavorite(widget.meal);
-  }
 
   String get complexityText {
-    return widget.meal.complexity.name[0].toUpperCase() +
-        widget.meal.complexity.name.substring(1);
+    return meal.complexity.name[0].toUpperCase() +
+        meal.complexity.name.substring(1);
   }
 
   String get affordabilityText {
-    return widget.meal.affordability.name[0].toUpperCase() +
-        widget.meal.affordability.name.substring(1);
+    return meal.affordability.name[0].toUpperCase() +
+        meal.affordability.name.substring(1);
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final favoriteMeals = ref.watch(favoriteMealsProvider);
+    final isFavorite = favoriteMeals.contains(meal);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.meal.title),
+        title: Text(meal.title),
         actions: [
           IconButton(
-            onPressed: _toggleFavorite,
+            onPressed: () {
+              final wasAdded = ref
+                  .read(favoriteMealsProvider.notifier)
+                  .toggleMealFavoriteStatus(meal);
+
+              ScaffoldMessenger.of(context).clearSnackBars();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    wasAdded
+                        ? '${meal.title} added to favorites'
+                        : '${meal.title} removed from favorites',
+                  ),
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            },
             icon: Icon(
-              _isFavorite ? Icons.favorite : Icons.favorite_border,
+              isFavorite ? Icons.favorite : Icons.favorite_border,
             ),
           ),
         ],
@@ -66,17 +63,17 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            MealDetailHeader(imageUrl: widget.meal.imageUrl),
+            MealDetailHeader(imageUrl: meal.imageUrl),
             const SizedBox(height: 14),
             _buildInfoCards(context),
             const SizedBox(height: 14),
-            DietaryInfoChips(meal: widget.meal),
+            DietaryInfoChips(meal: meal),
             const SizedBox(height: 14),
             const SectionTitle(title: 'Ingredients'),
-            IngredientsList(ingredients: widget.meal.ingredients),
+            IngredientsList(ingredients: meal.ingredients),
             const SizedBox(height: 14),
             const SectionTitle(title: 'Steps'),
-            StepsList(steps: widget.meal.steps),
+            StepsList(steps: meal.steps),
             const SizedBox(height: 24),
           ],
         ),
@@ -92,7 +89,7 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
         children: [
           MealItemTrait(
             icon: Icons.schedule,
-            value: '${widget.meal.duration} min',
+            value: '${meal.duration} min',
             label: 'Duration',
           ),
           MealItemTrait(
