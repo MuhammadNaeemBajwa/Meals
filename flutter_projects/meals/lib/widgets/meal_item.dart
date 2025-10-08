@@ -39,40 +39,43 @@ class MealItem extends ConsumerWidget {
         onTap: onSelectMeal,
         child: Stack(
           children: [
-            Image.network(
-              meal.imageUrl,
-              fit: BoxFit.cover,
-              height: 200,
-              width: double.infinity,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) {
-                  return child;
-                }
-                return Container(
-                  height: 200,
-                  color: Colors.black12,
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      value: loadingProgress.expectedTotalBytes != null
-                          ? loadingProgress.cumulativeBytesLoaded /
-                              loadingProgress.expectedTotalBytes!
-                          : null,
-                      color: Theme.of(context).primaryColor,
+            Hero(
+              tag: meal.id,
+              child: Image.network(
+                meal.imageUrl,
+                fit: BoxFit.cover,
+                height: 200,
+                width: double.infinity,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) {
+                    return child;
+                  }
+                  return Container(
+                    height: 200,
+                    color: Colors.black12,
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        value: loadingProgress.expectedTotalBytes != null
+                            ? loadingProgress.cumulativeBytesLoaded /
+                                loadingProgress.expectedTotalBytes!
+                            : null,
+                        color: Theme.of(context).primaryColor,
+                      ),
                     ),
-                  ),
-                );
-              },
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  height: 200,
-                  color: Colors.black12,
-                  child: Icon(
-                    Icons.restaurant,
-                    size: 50,
-                    color: Colors.grey[600],
-                  ),
-                );
-              },
+                  );
+                },
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    height: 200,
+                    color: Colors.black12,
+                    child: Icon(
+                      Icons.restaurant,
+                      size: 50,
+                      color: Colors.grey[600],
+                    ),
+                  );
+                },
+              ),
             ),
             Positioned(
               bottom: 0,
@@ -173,10 +176,18 @@ class MealItem extends ConsumerWidget {
                     ),
                   );
                 },
-                icon: Icon(
-                  isFavorite ? Icons.favorite : Icons.favorite_border,
-                  color: Colors.white,
-                  size: 28,
+                icon: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 250),
+                  switchInCurve: Curves.easeOut,
+                  switchOutCurve: Curves.easeIn,
+                  transitionBuilder: (child, animation) =>
+                      ScaleTransition(scale: animation, child: child),
+                  child: Icon(
+                    isFavorite ? Icons.favorite : Icons.favorite_border,
+                    key: ValueKey<bool>(isFavorite),
+                    color: Colors.white,
+                    size: 28,
+                  ),
                 ),
                 style: IconButton.styleFrom(
                   backgroundColor: Colors.black45,
